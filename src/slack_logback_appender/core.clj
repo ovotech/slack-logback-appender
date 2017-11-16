@@ -9,7 +9,7 @@
               [setWebhook [String] void]
               [setUsername [String] void]
               [setMention [String] void]
-              [setLayout [ch.qos.logback.core.Layout] void]])
+              [setEncoder [ch.qos.logback.core.encoder.Encoder] void]])
   (:require [cheshire.core :as json]
             [clj-http.client :as http]))
 
@@ -17,14 +17,14 @@
   [[] (atom {})])
 
 (defn -append [this e]
-  (let [{:keys [emoji channel webhook username mention layout]} @(.state this)
+  (let [{:keys [emoji channel webhook username mention encoder]} @(.state this)
         event-level      (-> e .getLevel str keyword)
         attachment-color (case event-level
                            :ERROR "danger"
                            :WARN "warning"
                            :INFO "good"
                            "#439FE0")
-        text             (.doLayout layout e)]
+        text             (String. (.encode encoder e))]
     (http/post webhook
       {:body (json/generate-string
                {:channel     channel
@@ -37,8 +37,8 @@
                                             (str "<!" (clojure.string/replace mention "@" "") ">\n" text)
                                             text)}]})})))
 
-(defn -setLayout [this layout]
-  (swap! (.state this) assoc :layout layout))
+(defn -setEncoder [this encoder]
+  (swap! (.state this) assoc :encoder encoder))
 
 (defn -setChannel [this channel]
   (swap! (.state this) assoc :channel channel))
