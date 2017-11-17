@@ -33,7 +33,7 @@
                 :attachments [{:title     event-level
                                :color     attachment-color
                                :mrkdwn_in ["text"]
-                               :text      (if mention
+                               :text      (if (not (empty? mention))
                                             (str "<!" (clojure.string/replace mention "@" "") ">\n" text)
                                             text)}]})})))
 
