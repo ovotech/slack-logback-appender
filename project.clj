@@ -1,4 +1,4 @@
-(defproject ovotech/slack-logback-appender "0.0.3"
+(defproject ovotech/slack-logback-appender "0.0.4"
   :description "Simple logback appender for pushing to a given Slack channel"
   :url "https://github.com/ovotech/slack-logback-appender"
 
