@@ -11,31 +11,34 @@
               [setMention [String] void]
               [setEncoder [ch.qos.logback.core.encoder.Encoder] void]])
   (:require [cheshire.core :as json]
-            [clj-http.client :as http]))
+            [clj-http.lite.client :as http]))
 
-(defn -init []
-  [[] (atom {})])
-
-(defn -append [this e]
-  (let [{:keys [emoji channel webhook username mention encoder]} @(.state this)
-        event-level      (-> e .getLevel str keyword)
+(defn send-to-slack
+  [{:keys [emoji channel webhook username mention encoder]} event]
+  (let [event-level      (-> event .getLevel str keyword)
         attachment-color (case event-level
                            :ERROR "danger"
                            :WARN "warning"
                            :INFO "good"
                            "#439FE0")
-        text             (String. (.encode encoder e))]
+        text             (String. (.encode encoder event))]
     (http/post webhook
-      {:body (json/generate-string
-               {:channel     channel
-                :username    username
-                :icon_emoji  emoji
-                :attachments [{:title     event-level
-                               :color     attachment-color
-                               :mrkdwn_in ["text"]
-                               :text      (if (not (empty? mention))
-                                            (str "<!" (clojure.string/replace mention "@" "") ">\n" text)
-                                            text)}]})})))
+               {:body (json/generate-string
+                        {:channel     channel
+                         :username    username
+                         :icon_emoji  emoji
+                         :attachments [{:title     event-level
+                                        :color     attachment-color
+                                        :mrkdwn_in ["text"]
+                                        :text      (if (not (empty? mention))
+                                                     (str "<!" (clojure.string/replace mention "@" "") ">\n" text)
+                                                     text)}]})})))
+
+(defn -init []
+  [[] (atom {})])
+
+(defn -append [this e]
+  (send-to-slack @(.state this) e))
 
 (defn -setEncoder [this encoder]
   (swap! (.state this) assoc :encoder encoder))

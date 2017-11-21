@@ -9,5 +9,10 @@
 
   :dependencies [[ch.qos.logback/logback-core "1.2.3"]
                  [cheshire "5.8.0"]
-                 [clj-http "3.7.0"]
-                 [org.clojure/clojure "1.8.0"]])
+                 [clj-http-lite "0.3.0"]
+                 [org.clojure/clojure "1.8.0"]]
+
+  :profiles {:dev {:dependencies [[ch.qos.logback/logback-classic "1.2.3"]
+                                  [environ "1.1.0"]]
+                   :source-paths ["dev"]
+                   :repl-options {:init-ns user}}})
