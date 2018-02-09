@@ -15,24 +15,26 @@
 
 (defn send-to-slack
   [{:keys [emoji channel webhook username mention encoder]} event]
-  (let [event-level      (-> event .getLevel str keyword)
-        attachment-color (case event-level
-                           :ERROR "danger"
-                           :WARN "warning"
-                           :INFO "good"
-                           "#439FE0")
-        text             (String. (.encode encoder event))]
-    (http/post webhook
-               {:body (json/generate-string
-                        {:channel     channel
-                         :username    username
-                         :icon_emoji  emoji
-                         :attachments [{:title     event-level
-                                        :color     attachment-color
-                                        :mrkdwn_in ["text"]
-                                        :text      (if (not (empty? mention))
-                                                     (str "<!" (clojure.string/replace mention "@" "") ">\n" text)
-                                                     text)}]})})))
+  (when (and (not (clojure.string/blank? channel))
+             (not (clojure.string/blank? webhook)))
+    (let [event-level      (-> event .getLevel str keyword)
+          attachment-color (case event-level
+                             :ERROR "danger"
+                             :WARN "warning"
+                             :INFO "good"
+                             "#439FE0")
+          text             (String. (.encode encoder event))]
+      (http/post webhook
+                 {:body (json/generate-string
+                          {:channel     channel
+                           :username    username
+                           :icon_emoji  emoji
+                           :attachments [{:title     event-level
+                                          :color     attachment-color
+                                          :mrkdwn_in ["text"]
+                                          :text      (if (not (empty? mention))
+                                                       (str "<!" (clojure.string/replace mention "@" "") ">\n" text)
+                                                       text)}]})}))))
 
 (defn -init []
   [[] (atom {})])
